@@ -7,6 +7,7 @@ import taxonomy from "./documents/taxonomy";
 import variant from "./documents/variant";
 import productImage from "./documents/productImage";
 import product from "./documents/product";
+import store from './documents/store';
 
 import localeString from "./locale/String";
 import localeText from "./locale/Text";
@@ -15,6 +16,7 @@ import localeBlockContent from "./locale/BlockContent";
 
 export default [
   blockContent,
+  store,
   country,
   catalog,
   size,

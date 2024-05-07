@@ -4,11 +4,10 @@ import { visionTool } from "@sanity/vision";
 import schemas from "./schemas/schemaTypes";
 import { Logo } from "./plugins/studioLogo";
 
-const title =
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_TITLE || "[Studio] Commerce Layer Sanity Starter";
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;
-const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION!;
+const title ="Parkware";
+const projectId = "dnyl6kr0";
+const dataset = "production";
+const apiVersion = "v2023-03-01";
 
 export default defineConfig({
   title,

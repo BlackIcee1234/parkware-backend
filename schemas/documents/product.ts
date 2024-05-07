@@ -6,20 +6,20 @@ const baseLanguage = supportedLanguages.find((l) => l.isDefault) || supportedLan
 
 export default defineType({
   name: "product",
-  title: "Product",
-  description: "A list of products associated with some variants",
+  title: "Producto",
+  description: "Una lista de productos asociados con algunas variantes",
   type: "document",
   icon: TfiShoppingCartFull,
   fields: [
     defineField({
       name: "name",
-      title: "Name",
+      title: "Nombre",
       type: "localeString",
       validation: (rule) => rule.required()
     }),
     defineField({
       name: "description",
-      title: "Description",
+      title: "Descripción",
       type: "localeText"
     }),
     defineField({
@@ -30,9 +30,36 @@ export default defineType({
     }),
     defineField({
       name: "reference",
-      title: "Reference",
+      title: "Referencia",
       type: "string",
       validation: (rule) => rule.required()
+    }),
+    defineField({
+      name: "price",
+      title: "Precio",
+      type: "string",
+      description: "Ingrese el precio en el formato XX.XX (por ejemplo, 20.00 MXN)",
+      validation: (rule) => rule.custom(price => {
+        if (!price) {
+          return 'El precio es obligatorio';
+        }
+        if (!/^\d+(\.\d{1,2})?$/.test(price)) {
+          return 'El precio debe estar en el formato XX.XX';
+        }
+        return true;
+      }).warning()
+    }),
+    defineField({
+      name: "currency",
+      title: "Moneda",
+      type: "string",
+      description: "Código de moneda, por ejemplo, MXN, USD, etc."
+    }),
+    defineField({
+      name: "stock",
+      title: "Inventario",
+      type: "number",
+      validation: (rule) => rule.min(0).integer()
     }),
     defineField({
       name: "images",
@@ -40,17 +67,14 @@ export default defineType({
       type: "array",
       of: [
         {
-          type: "reference",
-          to: {
-            type: "productImage"
-          }
+          type: "image"
         }
       ],
-      validation: (rule) => rule.required()
+      validation: (rule) => rule.required().error("Una imagen o mas es requerida.")
     }),
     defineField({
       name: "variants",
-      title: "Variants",
+      title: "Variantes",
       type: "array",
       of: [
         {
@@ -68,7 +92,7 @@ export default defineType({
     select: {
       title: `name.${baseLanguage.id}`,
       subtitle: `slug.${baseLanguage.id}.current`,
-      media: "images.0.images"
+      media: "images.0.image"
     },
     prepare({ title, subtitle, media }) {
       return {
