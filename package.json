@@ -1,7 +1,7 @@
 {
-  "name": "sanity-template-commercelayer",
+  "name": "parkware",
   "version": "1.4.0",
-  "description": "A multi-country ecommerce template built with Commerce Layer, Next.js, Sanity studio, and deployed to Netlify.",
+  "description": "Backend to Handle Virtual Queue",
   "private": true,
   "scripts": {
     "preinstall": "npx only-allow pnpm",
@@ -12,10 +12,6 @@
     "lint": "next lint -- --ignore-path .gitignore",
     "lint:fix": "pnpm run format && next lint -- --fix --ignore-path .gitignore",
     "export": "sanity dataset export production ./data/production.tar.gz"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/commercelayer/commercelayer-sanity-template.git"
   },
   "release": {
     "branches": [
@@ -78,18 +74,26 @@
     "@typescript-eslint/typescript-estree": "^7.0.1",
     "autoprefixer": "10.4.5",
     "axios": "^1.6.7",
+    "easyqrcodejs-nodejs": "^4.5.2",
+    "firebase-admin": "^12.1.0",
     "iframe-resizer-react": "^1.1.0",
     "js-cookie": "^3.0.1",
+    "jsqr": "^1.4.0",
     "next": "^14.1.0",
     "next-sanity": "^8.0.0",
     "postcss": "^8.4.35",
     "prop-types": "^15.8.1",
+    "qr-image": "^3.2.0",
+    "qrcode": "^1.5.3",
+    "qrious": "^4.0.2",
+    "qrjs2": "^0.1.11",
     "query-string": "^7.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.1",
     "sanity": "^3.28.0",
     "semver": "^7.6.0",
+    "socket.io": "^4.7.5",
     "styled-components": "^5.3.6"
   },
   "devDependencies": {
@@ -103,6 +107,7 @@
     "@types/js-cookie": "^3.0.1",
     "@types/lodash": "^4.14.178",
     "@types/node": "^20.11.17",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@types/styled-components": "^5.1.26",
