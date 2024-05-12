@@ -46,3 +46,4 @@ warn.log*
 # Data set
 data
 !data/production.tar.gz
+.vercel

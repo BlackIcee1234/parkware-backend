@@ -62,15 +62,10 @@ export default defineType({
       validation: (rule) => rule.min(0).integer()
     }),
     defineField({
-      name: "images",
-      title: "Images",
-      type: "array",
-      of: [
-        {
-          type: "image"
-        }
-      ],
-      validation: (rule) => rule.required().error("Una imagen o mas es requerida.")
+      name: "image",
+      title: "Imagen Del Producto",
+      type: "image",
+      validation: (rule) => rule.required().error("La imagen es obligatoria")
     }),
     defineField({
       name: "variants",
@@ -92,7 +87,7 @@ export default defineType({
     select: {
       title: `name.${baseLanguage.id}`,
       subtitle: `slug.${baseLanguage.id}.current`,
-      media: "images.0.image"
+      media: "image"
     },
     prepare({ title, subtitle, media }) {
       return {

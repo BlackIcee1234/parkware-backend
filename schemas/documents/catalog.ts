@@ -6,27 +6,27 @@ const baseLanguage = supportedLanguages.find((l) => l.isDefault) || supportedLan
 
 export default defineType({
   name: "catalog",
-  title: "Catalog",
-  description: "A list of catalogs associated with some products",
+  title: "Catalogo",
+  description: "Una lista de productos",
   type: "document",
   icon: SlGlobeAlt,
   fields: [
     defineField({
       name: "name",
-      title: "Name",
+      title: "Nombre",
       type: "localeString",
-      validation: (rule) => rule.required().error("A name is required")
+      validation: (rule) => rule.required().error("Un nombre es requerido.")
     }),
     defineField({
-      name: "products", // Cambiado de "taxonomies" a "products"
-      title: "Products", // Cambiado de "Taxonomies" a "Products"
+      name: "products",
+      title: "Products",
       type: "array",
-      validation: (rule) => rule.required().error("One or more products are required"),
+      validation: (rule) => rule.required().error("Selecciona uno o mas productos."),
       of: [
         {
           type: "reference",
           to: {
-            type: "product" // Cambiado de "taxonomy" a "product" o el tipo de documento correspondiente
+            type: "product"
           }
         }
       ]

@@ -1,11 +1,9 @@
 import blockContent from "./documents/blockContent";
-import country from "./documents/country";
+import news from "./documents/news";
 import catalog from "./documents/catalog";
 import size from "./documents/size";
-import taxon from "./documents/taxon";
-import taxonomy from "./documents/taxonomy";
+import atracction from "./documents/atracction";
 import variant from "./documents/variant";
-import productImage from "./documents/productImage";
 import product from "./documents/product";
 import store from './documents/store';
 
@@ -17,14 +15,12 @@ import localeBlockContent from "./locale/BlockContent";
 export default [
   blockContent,
   store,
-  country,
   catalog,
-  size,
-  taxon,
-  taxonomy,
-  variant,
-  productImage,
+  news,
+  atracction,
   product,
+  variant,
+  size,
   localeString,
   localeText,
   localeSlug,

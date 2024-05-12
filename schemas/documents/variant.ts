@@ -6,57 +6,53 @@ const baseLanguage = supportedLanguages.find((l) => l.isDefault) || supportedLan
 
 export default defineType({
   name: "variant",
-  title: "Variant",
+  title: "Variante",
   description: "",
   type: "document",
   icon: VscTypeHierarchySub,
   fields: [
     defineField({
       name: "name",
-      title: "Name",
+      title: "Nombre",
       type: "localeString",
-      validation: (rule) => rule.required().error("A name is required")
+      validation: (rule) => rule.required().error("El nombre es obligatorio")
     }),
     defineField({
-      name: "code",
-      title: "Code",
+      name: "price",
+      title: "Precio",
       type: "string",
-      validation: (rule) => rule.required().error("A variant code is required")
-    }),
-    defineField({
-      name: "description",
-      title: "Description",
-      type: "localeText"
-    }),
-    defineField({
-      name: "images",
-      title: "Images",
-      type: "array",
-      of: [
-        {
-          type: "reference",
-          to: {
-            type: "productImage"
-          }
+      description: "Ingrese el precio en el formato XX.XX (por ejemplo, 20.00 MXN)",
+      validation: (rule) => rule.custom(price => {
+        if (!price) {
+          return 'El precio es obligatorio';
         }
-      ],
-      validation: (rule) => rule.required().error("One or more images are required")
+        if (!/^\d+(\.\d{1,2})?$/.test(price)) {
+          return 'El precio debe estar en el formato XX.XX';
+        }
+        return true;
+      }).warning()
+    }),
+    defineField({
+      name: "image",
+      title: "Imagen",
+      type: "image",
+      validation: (rule) => rule.required().error("La imagen es obligatoria")
     }),
     defineField({
       name: "size",
-      title: "Size",
+      title: "Tamaño",
       type: "reference",
       to: {
         type: "size"
       },
-      validation: (rule) => rule.required().error("A size is required")
+      validation: (rule) => rule.required().error("El tamaño es obligatorio")
     })
   ],
 
   preview: {
     select: {
       title: `name.${baseLanguage.id}`,
-      media: "images.0.images"
+      media: "image"
     }
   }
 });
