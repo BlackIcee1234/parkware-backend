@@ -1,6 +1,6 @@
 import React from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../pages/config";
+import { auth } from "../../utils/config";
 import { useRouter } from "next/router";
 import { signOut } from "firebase/auth";
 import { useEffect } from "react";
@@ -11,16 +11,15 @@ const Header = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const userSession = Cookies.get('user');
-    console.log(userSession);
+    const userSession = Cookies.get("user");
     if (!user || !userSession) {
-      //router.push('/sign-up/page');
+      //router.push("/sign-up/page");
     }
   }, [user]);
 
   const handleLogout = () => {
     signOut(auth);
-    sessionStorage.removeItem('user');
+    sessionStorage.removeItem("user");
     router.push("/");
   };
 

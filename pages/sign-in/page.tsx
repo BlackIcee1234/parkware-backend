@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
-import { auth } from '../config';
-import { useRouter } from 'next/navigation';
-import Header from '@components/common/Header';
-import Cookies from 'js-cookie';
+import React, { useState } from "react";
+import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { auth } from "../../utils/config";
+import { useRouter } from "next/navigation";
+import Header from "@components/common/Header";
+import Cookies from "js-cookie";
 
 const SigninPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [signInWithEmailAndPassword] = useSignInWithEmailAndPassword(auth);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -24,14 +24,13 @@ const SigninPage: React.FC = () => {
     event.preventDefault();
     try {
       const res = await signInWithEmailAndPassword(email, password);
-      console.log({ res });
-      Cookies.set('user', JSON.stringify({ res }));
-      setEmail('');
-      setPassword('');
-      //router.push('/dashboard'); // Redirigir a la página de dashboard después del inicio de sesión exitoso
+      Cookies.set("user", JSON.stringify({ res }));
+      setEmail("");
+      setPassword("");
+      router.push("/dashboard");
     } catch (e) {
       console.error(e);
-      setError('Invalid email or password'); // Mensaje de error en caso de fallo en el inicio de sesión
+      setError("Invalid email or password");
     }
   };
 

@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
-import {auth} from '../config';
-import Header from '@components/common/Header';
-import Cookies from 'js-cookie';
+import React, { useState } from "react";
+import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { auth } from "../../utils/config";
+import Header from "@components/common/Header";
+import Cookies from "js-cookie";
 
 const SignupPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth);
 
@@ -18,12 +18,12 @@ const SignupPage = () => {
     setPassword(event.target.value);
   };
 
-  const handleSubmit =  async () => {
+  const handleSubmit = async () => {
     try {
       const res = await createUserWithEmailAndPassword(email, password);
-      Cookies.set('user', JSON.stringify(res));
-      setEmail('');
-      setPassword('');
+      Cookies.set("user", JSON.stringify(res));
+      setEmail("");
+      setPassword("");
     } catch(e){
       console.error(e);
     }

@@ -1,34 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { db } from '../../pages/config';
-import { collection, getDocs } from 'firebase/firestore';
+import React, { useEffect, useState } from "react";
+import { db } from "../../utils/config";
+import { collection, getDocs } from "firebase/firestore";
 
 interface Order {
   id: string;
   date: Date;
-  products: string[]; // O cualquier tipo más específico que represente los productos
+  products: string[];
   status: string;
-  // Otros campos según tus necesidades
 }
 
 const OrdersComponent: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  // const [page, setPage] = useState(1);
+  // const [totalPages, setTotalPages] = useState(1);
 
   const fetchOrders = async () => {
     try {
-      const ordersRef = collection(db, 'orders');
+      const ordersRef = collection(db, "orders");
       const querySnapshot = await getDocs(ordersRef);
       const ordersData: Order[] = [];
-      
       querySnapshot.forEach((doc) => {
-        // Asegúrate de convertir los campos según el tipo necesario
         const orderData: Order = {
             id: doc.id,
-            date: new Date(doc.data().date), // Convertir la cadena de texto a objeto Date
+            date: new Date(doc.data().date),
             products: doc.data().products,
-            status: doc.data().status,
-            // Añade otros campos según lo que tengas en tu base de datos
+            status: doc.data().status
           };
         ordersData.push(orderData);
       });
@@ -41,7 +37,7 @@ const OrdersComponent: React.FC = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, [page]);
+  }, []);
 
   return (
     <div className="container mx-auto mt-8">
@@ -51,7 +47,7 @@ const OrdersComponent: React.FC = () => {
           <li key={order.id} className="border border-gray-200 p-4 mb-4">
             <div>ID: {order.id}</div>
             <div>Fecha: {order.date.toLocaleString()}</div>
-            <div>Productos: {order.products.join(', ')}</div>
+            <div>Productos: {order.products.join(", ")}</div>
             <div>Estado: {order.status}</div>
             {/* Agrega más campos aquí según tus necesidades */}
           </li>

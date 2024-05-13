@@ -4,14 +4,10 @@
   "description": "Backend to Handle Virtual Queue",
   "private": true,
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
-    "dev": "next",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "format": "npx prettier --write . --ignore-path .gitignore",
-    "lint": "next lint -- --ignore-path .gitignore",
-    "lint:fix": "pnpm run format && next lint -- --fix --ignore-path .gitignore",
-    "export": "sanity dataset export production ./data/production.tar.gz"
+    "lint": "next lint"
   },
   "release": {
     "branches": [
