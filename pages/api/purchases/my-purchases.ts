@@ -38,7 +38,7 @@ export default async function handler(
           status: doc.data().status,
           uid: doc.data().uid,
           total: doc.data().total,
-          orderNumber: doc.data().orderNumber,
+          orderNumber: doc.data().orderNumber
         });
       });
 

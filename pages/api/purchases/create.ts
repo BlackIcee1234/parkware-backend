@@ -39,7 +39,7 @@ export default async function handler(
         products: products,
         total: total,
         status: "pending",
-        orderNumber: orderNumber,
+        orderNumber: orderNumber
       });
 
       const newOrderSnapshot = await getDoc(newOrderRef as DocumentReference<DocumentData>);
@@ -53,7 +53,7 @@ export default async function handler(
           status: newOrderData.status,
           uid: newOrderData.uid,
           total: newOrderData.total,
-          orderNumber: newOrderData.orderNumber,
+          orderNumber: newOrderData.orderNumber
         };
         res.status(200).json(newOrder);
       } else {

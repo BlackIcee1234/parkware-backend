@@ -1,74 +1,70 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { db } from "../../../utils/config";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 type JoinRequestData = {
-  name: string;
+  base64Data: string;
+  uid: string;
 };
 
 type ResponseData = {
   success: boolean;
-  message?: string;
-  queue?: string[];
-  timeToNextPerson?: number;
+  timeToNextRide?: string;
+  positionInQueue?: number;
+  error?: string;
 };
 
-// Lista que simula ser la fila virtual
-let virtualQueue: string[] = [];
+let waitingQueue: string[] = [];
+let enjoyingRideQueue: string[] = [];
 let lastUpdateTime: number = Date.now();
+console.log(lastUpdateTime);
 
-// Función para verificar si se debe sacar a la próxima persona de la fila
-function checkQueue() {
-  const currentTime = Date.now();
-  if (virtualQueue.length > 0 && currentTime - lastUpdateTime >= 120000) { // 2 minutos
-    virtualQueue.shift(); // Sacar a la próxima persona de la fila
-    lastUpdateTime = currentTime;
+async function moveUsersToEnjoyingRideQueue() {
+  const currentTime = new Date();
+  const currentHour = currentTime.getHours();
+
+  if (currentHour % 1 === 0 && currentTime.getMinutes() === 0) {
+    const usersToMove = waitingQueue.splice(0, 10);
+    enjoyingRideQueue.push(...usersToMove);
+    lastUpdateTime = currentTime.getTime();
   }
 }
 
-// Función para calcular el tiempo restante para sacar a la próxima persona de la fila
-function getTimeToNextPerson() {
-  const currentTime = Date.now();
-  const elapsedTime = currentTime - lastUpdateTime;
-  return Math.max(120000 - elapsedTime, 0); // 2 minutos en milisegundos
+function getPositionInQueue(uid: string): number {
+  return waitingQueue.indexOf(uid) + 1;
 }
 
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
-  // Verificar si se debe sacar a la próxima persona de la fila
-  checkQueue();
+  await moveUsersToEnjoyingRideQueue();
 
   if (req.method === "POST") {
-    // Obtener los datos enviados en el cuerpo de la solicitud
-    const { name }: JoinRequestData = req.body;
+    const { base64Data, uid }: JoinRequestData = req.body;
 
-    // Agregar el nombre a la fila virtual
-    virtualQueue.push(name);
-    lastUpdateTime = Date.now(); // Actualizar el tiempo de la última actualización
-
-    // Devolver un mensaje de éxito con el nombre agregado
-    res.status(200).json({ success: true, message: `Added ${name} to virtual queue` });
-  } else if (req.method === "GET" && req.query.action === "timeToNextPerson") {
-    // Calcular el tiempo restante para sacar a la próxima persona de la fila
-    const timeToNextPerson = getTimeToNextPerson();
-    res.status(200).json({ success: true, timeToNextPerson });
-  } else if (req.method === "GET") {
-    // Devolver la lista actualizada de personas en la fila virtual
-    res.status(200).json({ success: true, queue: virtualQueue });
-  } else if (req.method === "DELETE") {
-    // Obtener el nombre de la persona a eliminar
-    const { name }: JoinRequestData = req.body;
-
-    // Encontrar y eliminar la persona de la fila virtual
-    const index = virtualQueue.indexOf(name);
-    if (index !== -1) {
-      virtualQueue.splice(index, 1);
-      res.status(200).json({ success: true, message: `Removed ${name} from virtual queue` });
-    } else {
-      res.status(404).json({ success: false, message: `${name} not found in virtual queue` });
+    try {
+      const ordersRef = collection(db, "/qrcodes");
+      const q = query(ordersRef, where("base64Data", "==", base64Data));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        if(doc.data().base64Data === base64Data) {
+          const position = getPositionInQueue(uid);
+          return res.status(200).json({ success: true, positionInQueue: position });
+        } else {
+          return res.status(400).json({ success: false, error: "Invalid QR code" });
+        }
+      });
+    } catch (error) {
+      console.error("Error verifying QR code:", error);
+      return res.status(500).json({ success: false, error: "Error verifying QR code" });
     }
+  } else if (req.method === "GET") {
+    const currentTime = new Date();
+    const timeToNextRide = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), (Math.floor(currentTime.getHours()) + 1), 0, 0).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    return res.status(200).json({ success: true, timeToNextRide });
   } else {
-    // Devolver un error si el método de solicitud no es POST, GET o DELETE
-    res.status(405).json({ success: false, message: "Method Not Allowed" });
+    return res.status(405).json({ success: false, error: "Method Not Allowed" });
   }
 }
