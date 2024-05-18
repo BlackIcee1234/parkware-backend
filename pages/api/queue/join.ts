@@ -12,6 +12,41 @@ type QueueState = {
 };
 
 let virtualQueue: { text: string, uid: string }[] = [];
+console.log(virtualQueue);
+
+const rideTimes: string[] = [
+  "08:00",
+  "08:20",
+  "08:40",
+  "09:00",
+  "09:20",
+  "09:40",
+  "10:00",
+  "10:20",
+  "10:40",
+  "11:00",
+  "11:20",
+  "11:40",
+  "12:00",
+  "12:20",
+  "12:40",
+  "13:00",
+  "13:20",
+  "13:40",
+  "14:00",
+  "14:20",
+  "14:40",
+  "15:00",
+  "15:20",
+  "15:40",
+  "16:00",
+  "16:20",
+  "16:40",
+  "17:00",
+  "17:20",
+  "17:40"
+];
+console.log(rideTimes);
 
 async function updateQRCodeStatus(qrCode: string, newStatus: string) {
   const qrCodesRef = collection(db, "qrcodes");
@@ -22,26 +57,33 @@ async function updateQRCodeStatus(qrCode: string, newStatus: string) {
   });
 }
 
+function getLocalTimeInMexico() {
+  const now = new Date();
+  // Guadalajara is in the Central Time Zone (UTC-6), and observes Daylight Saving Time (UTC-5 during DST)
+  const offset = now.getTimezoneOffset() / 60; // getTimezoneOffset() returns minutes, convert to hours
+  const centralTimeOffset = -6; // Standard time (UTC-6)
+  const isDST = now.getMonth() >= 3 && now.getMonth() <= 10; // Rough estimate of DST period (April to October)
+  const mexicoCityOffset = isDST ? centralTimeOffset + 1 : centralTimeOffset;
+
+  const mexicoCityTime = new Date(now.getTime() + (mexicoCityOffset - offset) * 3600 * 1000);
+  return mexicoCityTime;
+}
+
+function formatTime(date: Date) {
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
 function getQueueState(uid: string): QueueState {
   const userQueue = virtualQueue.filter(entry => entry.uid === uid);
 
   if (userQueue.length === 0) {
     return { users: [] };
   }
-  const rideTimes: Date[] = [];
-  const startTime = new Date();
-  startTime.setHours(8, 0, 0);
-  const endTime = new Date();
-  endTime.setHours(18, 0, 0);
 
-  let currentTime = new Date(startTime);
-
-  while (currentTime < endTime) {
-    rideTimes.push(new Date(currentTime));
-    currentTime.setMinutes(currentTime.getMinutes() + 20);
-  }
-
-  const now = new Date();
+  const now = getLocalTimeInMexico();
+  const currentTime = formatTime(now);
 
   const usersState = userQueue.map((entry, index) => {
     const position = index + 1;
@@ -49,18 +91,20 @@ function getQueueState(uid: string): QueueState {
     let timeUntilNextRemoval = "";
 
     for (const rideTime of rideTimes) {
-      if (rideTime > now) {
-        const diffMs = rideTime.getTime() - now.getTime();
+      if (rideTime > currentTime) {
+        const [rideHour, rideMinute] = rideTime.split(":").map(Number);
+        const rideDate = new Date(now);
+        rideDate.setHours(rideHour, rideMinute, 0, 0);
+
+        const diffMs = rideDate.getTime() - now.getTime();
         const diffSeconds = Math.ceil(diffMs / 1000);
         const minutes = Math.floor(diffSeconds / 60);
         const seconds = diffSeconds % 60;
         timeToNextRide = `${minutes} minutos y ${seconds} segundos`;
-        timeUntilNextRemoval = `${minutes + (20 * index)} minutos y ${seconds} segundos`;
-
+        timeUntilNextRemoval = `${minutes + (20 * (position - 1))} minutos y ${seconds} segundos`;
         break;
       }
     }
-
     return {
       uid: entry.uid,
       position: position,
@@ -72,10 +116,7 @@ function getQueueState(uid: string): QueueState {
   return { users: usersState };
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const { uid, qrCodes, leave } = req.body;
     try {
