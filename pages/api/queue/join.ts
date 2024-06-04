@@ -1,18 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { db } from "../../../utils/config";
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
-
-type QueueState = {
-  users: {
-    uid: string;
-    position: number;
-    timeToNextRide: string;
-    timeUntilNextRemoval: string;
-  }[];
-};
-
-let virtualQueue: { text: string, uid: string }[] = [];
-console.log(virtualQueue);
+import { collection, query, where, getDocs, addDoc, updateDoc, doc } from "firebase/firestore";
 
 const rideTimes: string[] = [
   "08:00",
@@ -44,9 +32,26 @@ const rideTimes: string[] = [
   "16:40",
   "17:00",
   "17:20",
-  "17:40"
+  "17:40",
+  "18:00",
+  "18:20",
+  "18:40",
+  "19:00",
+  "19:20",
+  "19:40",
+  "20:00",
+  "20:20",
+  "20:40",
+  "21:00",
+  "21:20",
+  "21:40",
+  "22:00",
+  "22:20",
+  "22:40",
+  "23:00",
+  "23:20",
+  "23:40"
 ];
-console.log(rideTimes);
 
 async function updateQRCodeStatus(qrCode: string, newStatus: string) {
   const qrCodesRef = collection(db, "qrcodes");
@@ -59,10 +64,9 @@ async function updateQRCodeStatus(qrCode: string, newStatus: string) {
 
 function getLocalTimeInMexico() {
   const now = new Date();
-  // Guadalajara is in the Central Time Zone (UTC-6), and observes Daylight Saving Time (UTC-5 during DST)
-  const offset = now.getTimezoneOffset() / 60; // getTimezoneOffset() returns minutes, convert to hours
-  const centralTimeOffset = -6; // Standard time (UTC-6)
-  const isDST = now.getMonth() >= 3 && now.getMonth() <= 10; // Rough estimate of DST period (April to October)
+  const offset = now.getTimezoneOffset() / 60;
+  const centralTimeOffset = -6;
+  const isDST = now.getMonth() >= 3 && now.getMonth() <= 10;
   const mexicoCityOffset = isDST ? centralTimeOffset + 1 : centralTimeOffset;
 
   const mexicoCityTime = new Date(now.getTime() + (mexicoCityOffset - offset) * 3600 * 1000);
@@ -75,86 +79,35 @@ function formatTime(date: Date) {
   return `${hours}:${minutes}`;
 }
 
-function getQueueState(uid: string): QueueState {
-  const userQueue = virtualQueue.filter(entry => entry.uid === uid);
-
-  if (userQueue.length === 0) {
-    return { users: [] };
-  }
-
-  const now = getLocalTimeInMexico();
-  const currentTime = formatTime(now);
-
-  const usersState = userQueue.map((entry, index) => {
-    const position = index + 1;
-    let timeToNextRide = "";
-    let timeUntilNextRemoval = "";
-
-    for (const rideTime of rideTimes) {
-      if (rideTime > currentTime) {
-        const [rideHour, rideMinute] = rideTime.split(":").map(Number);
-        const rideDate = new Date(now);
-        rideDate.setHours(rideHour, rideMinute, 0, 0);
-
-        const diffMs = rideDate.getTime() - now.getTime();
-        const diffSeconds = Math.ceil(diffMs / 1000);
-        const minutes = Math.floor(diffSeconds / 60);
-        const seconds = diffSeconds % 60;
-        timeToNextRide = `${minutes} minutos y ${seconds} segundos`;
-        timeUntilNextRemoval = `${minutes + (20 * (position - 1))} minutos y ${seconds} segundos`;
-        break;
-      }
-    }
-    return {
-      uid: entry.uid,
-      position: position,
-      timeToNextRide: timeToNextRide,
-      timeUntilNextRemoval: timeUntilNextRemoval
-    };
-  });
-
-  return { users: usersState };
-}
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
-    const { uid, qrCodes, leave } = req.body;
+    const { uid, qrCodes } = req.body;
     try {
-      if (qrCodes) {
+      if (qrCodes && uid) {
         const arrayQrCodes: string[] = JSON.parse(qrCodes);
+        const now = getLocalTimeInMexico();
+        const currentTime = formatTime(now);
+
         for (const qrCode of arrayQrCodes) {
           await updateQRCodeStatus(qrCode, "haciendo fila");
-          virtualQueue.push({ text: qrCode, uid });
+
+          let nextRideTime = "";
+          for (const rideTime of rideTimes) {
+            if (rideTime > currentTime) {
+              nextRideTime = rideTime;
+              break;
+            }
+          }
+
+          await addDoc(collection(db, "virtualQueue"), {
+            uid,
+            text: qrCode,
+            rideTime: nextRideTime
+          });
         }
 
         res.status(200).json({ success: true, message: "Unido a la fila virtual" });
       }
-      else if (leave) {
-        const index = virtualQueue.findIndex(entry => entry.uid === uid);
-        if (index !== -1) {
-          virtualQueue.splice(index, 1);
-          res.status(200).json({ success: true, message: "Saliste de la fila virtual" });
-        } else {
-          res.status(404).json({ success: false, error: "El usuario no está en la fila virtual" });
-        }
-      }
-      else {
-        const usersInQueue = virtualQueue.filter(entry => entry.uid === uid);
-        if (usersInQueue.length > 0) {
-          const state = getQueueState(uid);
-          res.status(200).json({ success: true, queueState: state });
-        } else {
-          res.status(404).json({ success: false, error: "El usuario no está en la fila virtual" });
-        }
-      }
-    } catch (error) {
-      console.error("Error al procesar la solicitud:", error);
-      res.status(500).json({ success: false, error: "Error al procesar la solicitud" });
-    }
-  } else if (req.method === "DELETE") {
-    try {
-      virtualQueue.splice(0, 2);
-      res.status(200).json({ success: true, message: "Los primeros dos elementos han sido eliminados de la fila virtual" });
     } catch (error) {
       console.error("Error al procesar la solicitud:", error);
       res.status(500).json({ success: false, error: "Error al procesar la solicitud" });
