@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { db } from "../../../utils/config";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 type QueueState = {
   users: {
@@ -85,23 +85,22 @@ function formatTime(date: Date) {
 
 async function getQueueState(uid: string): Promise<QueueState> {
   const queueRef = collection(db, "virtualQueue");
-  const q = query(queueRef, where("uid", "==", uid));
-  const querySnapshot = await getDocs(q);
+  const querySnapshot = await getDocs(queueRef);
 
   if (querySnapshot.empty) {
     return { users: [] };
   }
 
-  const now = getLocalTimeInMexico();
+  const now = process.env.NODE_ENV === "production" ? getLocalTimeInMexico() : new Date();
   const currentTime = formatTime(now);
   const usersState = [];
 
-  let position = 1;
   for (const docSnapshot of querySnapshot.docs) {
     const data = docSnapshot.data();
     let timeToNextRide = "";
     let timeUntilNextRemoval = "";
 
+    // Calcular el tiempo hasta el próximo ride basado en el tiempo actual
     for (const rideTime of rideTimes) {
       if (rideTime > currentTime) {
         const [rideHour, rideMinute] = rideTime.split(":").map(Number);
@@ -113,25 +112,42 @@ async function getQueueState(uid: string): Promise<QueueState> {
         const minutes = Math.floor(diffSeconds / 60);
         const seconds = diffSeconds % 60;
         timeToNextRide = `${minutes} minutos y ${seconds} segundos`;
-        timeUntilNextRemoval = `${minutes + (20 * (position - 1))} minutos y ${seconds} segundos`;
         break;
       }
     }
 
-    usersState.push({
-      uid: data.uid,
-      position: position,
-      timeToNextRide: timeToNextRide,
-      timeUntilNextRemoval: timeUntilNextRemoval,
-      text: data.text,
-      rideTime: data.rideTime
-    });
+    // Calcular el tiempo hasta la próxima remoción basado en la posición
+    const position = data.position;
+    const groupIndex = Math.floor((position - 1) / 3);
+    const nextRideTimeIndex = rideTimes.findIndex(rideTime => rideTime > currentTime) + groupIndex;
+    if (nextRideTimeIndex < rideTimes.length) {
+      const [nextRideHour, nextRideMinute] = rideTimes[nextRideTimeIndex].split(":").map(Number);
+      const nextRideDate = new Date(now);
+      nextRideDate.setHours(nextRideHour, nextRideMinute, 0, 0);
 
-    position++;
+      const diffMs = nextRideDate.getTime() - now.getTime();
+      const diffSeconds = Math.ceil(diffMs / 1000);
+      const minutes = Math.floor(diffSeconds / 60);
+      const seconds = diffSeconds % 60;
+      timeUntilNextRemoval = `${minutes} minutos y ${seconds} segundos`;
+    }
+
+    if (data.uid === uid) {
+      usersState.push({
+        uid: data.uid,
+        position: data.position,
+        timeToNextRide: timeToNextRide,
+        timeUntilNextRemoval: timeUntilNextRemoval,
+        text: data.text,
+        rideTime: rideTimes[nextRideTimeIndex]
+      });
+    }
   }
 
   return { users: usersState };
 }
+
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
