@@ -53,22 +53,6 @@ Desarrollar una plataforma móvil y web que permita:
 
 ---
 
-## 📱 Screenshots de la App
-
-### **Splash Screen**
-![Splash Screen](#)
-
-### **Vista Principal**
-![Vista Principal](#)
-
-### **Filas Virtuales**
-![Filas Virtuales](#)
-
-### **Checkout**
-![Checkout](#)
-
----
-
 ## 🛠️ Instalación y Configuración
 
 1. Clona este repositorio:
@@ -103,7 +87,7 @@ Desarrollar una plataforma móvil y web que permita:
 Si tienes preguntas o quieres saber más sobre este proyecto, no dudes en contactarme:
 
 **Axel Andree Pérez Reyes**  
-📧 [tu_email@example.com](mailto:andreereyes0@gmail.com)  
-💼 [LinkedIn]([https://www.linkedin.com/in/tuperfil](https://www.linkedin.com/in/axel-andree/))
+📧 [andreereyes0@gmail.com](mailto:andreereyes0@gmail.com)  
+💼 [LinkedIn](https://www.linkedin.com/in/axel-andree/)
 
 ¡Espero que disfrutes explorando este proyecto tanto como yo disfruté creándolo!
