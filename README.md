@@ -107,6 +107,3 @@ Si tienes preguntas o quieres saber más sobre este proyecto, no dudes en contac
 💼 [LinkedIn]([https://www.linkedin.com/in/tuperfil](https://www.linkedin.com/in/axel-andree/))
 
 ¡Espero que disfrutes explorando este proyecto tanto como yo disfruté creándolo!
-```
-
-Si necesitas personalizarlo más o incluir links específicos, házmelo saber. 😊
