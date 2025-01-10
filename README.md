@@ -1,6 +1,3 @@
-¡Claro! Basándome en tu solicitud y la información del proyecto "ParkWare" que subiste, aquí tienes un archivo README en formato Markdown que puedes usar como presentación para reclutadores:
-
-```markdown
 # ParkWare: Mejorando la Experiencia en el Zoológico de Guadalajara 🐾
 
 ¡Bienvenido a ParkWare! Este proyecto busca transformar la experiencia de los visitantes del Zoológico de Guadalajara mediante tecnología innovadora. A continuación, encontrarás una descripción detallada de lo que construimos y cómo puede mejorar las operaciones del zoológico.
